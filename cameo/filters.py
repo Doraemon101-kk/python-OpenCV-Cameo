@@ -29,11 +29,11 @@ class VConvolutionFilter(object):
         cv2.filter2D(src, -1, self.kernel, dst)
 
 
-class SharpenFiltera(VConvolutionFilter):
+class SharpenFilter(VConvolutionFilter):
     """A sharpen filter with a 1-pixel radius."""
     def __init__(self):
-        kernel = np.array([[-1, -1, -1]
-                           [-1,  9, -1]
+        kernel = np.array([[-1, -1, -1],
+                           [-1,  9, -1],
                            [-1, -1, -1]])
         VConvolutionFilter.__init__(self,kernel)
 
@@ -44,7 +44,7 @@ class FindEdgesFilter(VConvolutionFilter):
                            [0.04, 0.04, 0.04, 0.04, 0.04],
                            [0.04, 0.04, 0.04, 0.04, 0.04],
                            [0.04, 0.04, 0.04, 0.04, 0.04],
-                           [0.04, 0.04, 0.04, 0.04, 0.04],])
+                           [0.04, 0.04, 0.04, 0.04, 0.04]])
         VConvolutionFilter.__init__(self,kernel)
 
 class BlurFilter(VConvolutionFilter):
