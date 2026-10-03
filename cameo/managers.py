@@ -143,7 +143,7 @@ class WindowManager(object):
     def isWindowCreated(self):
         return self._isWindowCreated
     def createWindow(self):
-        cv2.imshow(self._windowName)
+        cv2.namedWindow(self._windowName)
         self._isWindowCreated = True
 
     def show(self, frame):
@@ -156,4 +156,4 @@ class WindowManager(object):
         keycode = cv2.waitKey(1)
         if self.keypressCallback is not None and keycode != -1:
             self.keypressCallback(keycode)
-            
+

@@ -30,7 +30,7 @@ class Cameo(object):
         escape ->  Quit."""
 
         if keycode == 32:
-            self._captureManager.WriteImage('screenshot.png')
+            self._captureManager.writeImage('screenshot.png')
         elif keycode == 9:
             if not self._captureManager.isWritingVideo:
                 self._captureManager.startWritingVideo('screencast.avi')
