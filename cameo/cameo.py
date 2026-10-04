@@ -14,15 +14,28 @@ class Cameo(object):
                                               self._windowManager, True)
         self._curveFilter = filters.BGRPortraCurveFilter()
 
+        self._faceTracker = FaceTracker()
+        self._shouldDrawDebugRects = False
+
     def run(self):
         """Run the main loop"""
         self._windowManager.createWindow()
         while self._windowManager.isWindowCreated:
             self._captureManager.enterFrame()
             frame = self._captureManager.frame
+
             if frame is not None:
+                self._faceTracker.update(frame)
+                faces = self._faceTracker.faces
+                rects.swapRects(frame, frame,
+                                [face.faceRect for face in faces])
+
+
                 filters.strokeEdges(frame, frame)
                 self._curveFilter.apply(frame, frame)
+                if self._shouldDrawDebugRects:
+                    self._faceTracker.drawDebugRects(frame)
+            
             self._captureManager.exitFrame()
             self._windowManager.processEvents()
 
@@ -31,7 +44,8 @@ class Cameo(object):
         """Handle a keypress.
         space -> Take a screenshot.
         tab ->  Start/stop recording a screenshot.
-        escape ->  Quit."""
+        escape ->  Quit.
+        """
 
         if keycode == 32:
             self._captureManager.writeImage('screenshot.png')
@@ -40,6 +54,9 @@ class Cameo(object):
                 self._captureManager.startWritingVideo('screencast.avi')
             else:
                 self._captureManager.stopWritingVideo()
+        elif keycode == 120: # x
+                self._shouldDrawDebugRects = \
+                    not self._shouldDrawDebugRects
         elif keycode == 27:
             self._windowManager.destroyWindow()
 
@@ -53,6 +70,9 @@ class CameoDepth(Cameo):
         self._captureManager = CaptureManager(
             cv2.VideoCapture(device), self._windowManager, True
         )
+
+        self._faceTracker = FaceTracker()
+        self._shouldDrawDebugRects = False
         self._curveFilter = filters.BGRPortraCurveFilter()
 
     def run(self):
@@ -74,11 +94,24 @@ class CameoDepth(Cameo):
                 frame = self._captureManager.frame
 
             if frame is not None:
-                mask = depth.createMedianMask(disparityMap, validDepthMask)
-                frame[mask == 0] = 0 #Make everything except the median layer black.
+                self._faceTracker.update(frame)
+                faces = self._faceTracker.faces
+                masks = [
+                    depth.createMedianMask(
+                        disparityMap, validDepthMask, face.faceRect) \
+                    for face in faces
+                ]
+                rects.swapRects(frame, frame,
+                                [face.faceRect for face in faces], masks)
 
-                filters.strokeEdges(frame, frame)
-                self._curveFilter.apply(frame, frame)
+                if self._captureManager.channel == cv2.CAP_OPENNI_BGR_IMAGE:
+                    # A BGR frame was captured.
+                    # Apply filters to it.
+                    filters.strokeEdges(frame, frame)
+                    self._curveFilter.apply(frame, frame)
+
+                if self._shouldDrawDebugRects:
+                    self._faceTracker.drawDebugRects(frame)
 
             self._captureManager.exitFrame()
             self._windowManager.processEvents()
