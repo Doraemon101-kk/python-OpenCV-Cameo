@@ -2,6 +2,8 @@ import cv2
 from managers import WindowManager, CaptureManager
 import filters
 import depth
+import rects
+from trackers import FaceTracker
 
 
 class Cameo(object):
@@ -80,7 +82,9 @@ class CameoDepth(Cameo):
 
             self._captureManager.exitFrame()
             self._windowManager.processEvents()
-        
+
+
+
 
 if __name__ == "__main__":
     #Cameo().run()
